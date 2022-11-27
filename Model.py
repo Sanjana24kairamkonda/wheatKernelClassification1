@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import silhouette_score
+from sklearn.metrics import accuracy_score
 from scipy import stats
-file = "C:\\Users\\lenovo\\Downloads\\archive\\Seed_Data.csv"
+file = "C:/Users/lenovo/PycharmProjects/Wheat kernel cla ssification/Seed_Data.csv"
 file_path: str = os.path.join(file)
 df = pd.read_csv(file_path)
 df = df.drop('target', axis=1)
@@ -122,6 +123,8 @@ plt.plot(X[y_pred==2, 1], X[y_pred==2,2], 'g^', label='cluster3')
 plt.show()
 
 np.sum(y_pred==y_gauss)
+print("Accuracy:", accuracy_score(y_3n,y_pred))
+print("Accuracy:", accuracy_score(y_4n,y_pred))
 
 pickle.dump(kmeans_3n, open("model.pkl", "wb"))
 
