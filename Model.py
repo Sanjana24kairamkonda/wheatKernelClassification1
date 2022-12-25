@@ -6,15 +6,63 @@ from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report, confusion_matrix,accuracy_score,roc_auc_score,roc_curve
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_classification
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+import matplotlib.pyplot as plt
+from sklearn.tree import plot_tree
+import graphviz
+from sklearn.tree import export_graphviz
 from scipy import stats
 #file = "C:\Users\lenovo\PycharmProjects\Wheat kernel classification\Seed_Data.csv"
 
 #file_path: str = os.path.join(file)
 df = pd.read_csv("Seed_Data.csv")
-df = df.drop('target', axis=1)
 df.info()
 df.head()
 X = df.iloc[:, [0,1,2,3,4,5,6]].values
+y=df.iloc[:,-1].values
+
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.3,random_state=3)
+ss=StandardScaler()
+X_trains=ss.fit_transform(X_train)
+X_tests=ss.transform(X_test)
+rfc=RandomForestClassifier(n_estimators=20)
+
+rfc.fit(X_trains,y_train)
+y_train_pred =rfc.predict(X_trains)
+y_train_prob = rfc.predict_proba(X_trains)[:,1]
+
+print('Confusion Matrix - Train: \n', confusion_matrix(y_train, y_train_pred))
+print('\n')
+print('Overall Accuracy - Train: ', accuracy_score(y_train, y_train_pred))
+print(rfc.feature_importances_)
+
+fig = plt.figure(figsize=(15, 10))
+print(plot_tree(rfc.estimators_[0], filled=True, impurity=True, rounded=True))
+
+dot_data = export_graphviz(rfc.estimators_[0], filled=True, impurity=True, rounded=True)
+
+graph = graphviz.Source(dot_data, format='png')
+print(graph)
+
+Classifier=DecisionTreeClassifier(criterion='gini',random_state=42)
+Classifier.fit(X_train,y_train)
+y_pred=Classifier.predict(X_test)
+acc=metrics.accuracy_score(y_test,y_pred)
+print(acc)
+fig = plt.figure(figsize=(15, 10))
+print(plot_tree(Classifier, filled=True, impurity=True, rounded=True))
+
+dot_data = export_graphviz(Classifier, filled=True, impurity=True, rounded=True)
+
+graph = graphviz.Source(dot_data, format='png')
+print(graph)
 wcss = []
 for i in range(1, 11):
     kmeans = KMeans(n_clusters=i, init="k-means++")
@@ -126,7 +174,8 @@ np.sum(y_pred==y_gauss)
 print("Accuracy:", accuracy_score(y_3n,y_pred))
 print("Accuracy:", accuracy_score(y_4n,y_pred))
 
-pickle.dump(kmeans_3n, open("model.pkl", "wb"))
+
+pickle.dump(rfc, open("model.pkl", "wb"))
 
 
 
